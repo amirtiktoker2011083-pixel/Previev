@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>LinkPreview — умное превью сайтов</title>
+    <title>Universal Preview — превью ссылок и видео</title>
     <style>
         * {
             margin: 0;
@@ -31,7 +31,6 @@
             border-radius: 2rem;
             padding: 1.75rem 1.5rem 2rem 1.5rem;
             box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
-            transition: all 0.2s ease;
         }
 
         h1 {
@@ -139,7 +138,7 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* блок превью */
+        /* Preview card */
         .preview-card {
             background: #0b0e12;
             border-radius: 1.5rem;
@@ -149,85 +148,68 @@
             transition: all 0.3s ease;
         }
 
-        .preview-header {
+        .preview-image-area {
+            position: relative;
+            background: #000;
+            min-height: 200px;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: center;
+        }
+
+        .preview-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            max-height: 380px;
+        }
+
+        .video-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .preview-header {
             padding: 1rem 1.2rem;
             background: #13181f;
             border-bottom: 1px solid #282f38;
         }
 
-        .favicon-large {
-            width: 48px;
-            height: 48px;
-            background: #1e2a36;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .favicon-large img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .site-info {
-            flex: 1;
-            min-width: 0;
-        }
-
         .site-title {
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             color: #ffffff;
             margin-bottom: 0.25rem;
             word-break: break-word;
         }
 
         .site-url {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #8b95b0;
             word-break: break-all;
         }
 
         .preview-body {
-            padding: 1.2rem;
+            padding: 1rem 1.2rem;
         }
 
-        .description-box {
-            background: #0f131a;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 3px solid #3b82f6;
-        }
-
-        .description-text {
+        .description {
             color: #cbd5e6;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             line-height: 1.4;
-            word-break: break-word;
-        }
-
-        .meta-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 0.8rem;
-            font-size: 0.75rem;
-            color: #7e88a3;
-        }
-
-        .meta-item {
-            background: #0a0d12;
-            padding: 0.3rem 0.8rem;
-            border-radius: 1rem;
+            margin-bottom: 0.8rem;
         }
 
         .preview-actions {
@@ -276,11 +258,6 @@
             color: white;
         }
 
-        .btn-download:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
         .hidden {
             display: none;
         }
@@ -296,8 +273,6 @@
 
         @media (max-width: 550px) {
             .glass-card { padding: 1.2rem; }
-            .preview-header { flex-direction: column; text-align: center; }
-            .favicon-large { width: 56px; height: 56px; }
             .site-title { font-size: 1rem; }
         }
     </style>
@@ -307,40 +282,38 @@
 <div class="glass-card">
     <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
         <div>
-            <h1>🔗 LinkPreview</h1>
-            <div class="sub">Вставь ссылку → моментальное превью с данными сайта + скачивание на телефон</div>
+            <h1>🎬 LinkPreview Pro</h1>
+            <div class="sub">Любая ссылка → красивое превью (YouTube, сайты, видео)</div>
         </div>
         <div style="font-size: 1.4rem;">✨</div>
     </div>
 
     <div class="input-group">
-        <input type="text" id="urlInput" class="url-input" placeholder="https://github.com или yandex.ru" value="https://github.com">
-        <button id="loadBtn" class="load-btn">📡 Загрузить превью</button>
+        <input type="text" id="urlInput" class="url-input" placeholder="https://youtu.be/IHpLXPjF79g или любой сайт" value="https://youtu.be/IHpLXPjF79g">
+        <button id="loadBtn" class="load-btn">🚀 Сделать превью</button>
     </div>
 
     <div id="statusArea" class="status-area">
-        <span>💡 Введите URL и нажмите "Загрузить превью" — я сам получу данные сайта.</span>
+        <span>💡 Вставьте ссылку на YouTube, TikTok, Twitter или обычный сайт — я покажу превью!</span>
     </div>
 
     <div id="previewContainer" class="hidden"></div>
 
     <div class="info-note">
-        📲 <strong>Как это работает:</strong> Я загружаю HTML страницы через прокси, вытаскиваю заголовок, описание, иконку и создаю красивую карточку превью.<br>
-        ⬇️ Карточку можно скачать как PNG и сохранить в галерею телефона!
+        📲 <strong>Работает с любыми ссылками:</strong> YouTube (превью видео), Twitter, TikTok, Instagram, обычные сайты.<br>
+        ⬇️ Нажмите «Скачать превью» — картинка сохранится в галерею телефона.
     </div>
 </div>
 
 <script>
     (function() {
-        // DOM элементы
         const urlInput = document.getElementById('urlInput');
         const loadBtn = document.getElementById('loadBtn');
         const statusArea = document.getElementById('statusArea');
         const previewContainer = document.getElementById('previewContainer');
         
-        let currentPreviewData = null;
+        let currentImageUrl = '';
         
-        // Функция показа статуса
         function setStatus(message, isError = false, isLoading = false) {
             statusArea.innerHTML = '';
             if (isLoading) {
@@ -351,7 +324,6 @@
             }
         }
         
-        // Нормализация URL
         function normalizeUrl(raw) {
             let url = raw.trim();
             if (!url) return '';
@@ -366,144 +338,213 @@
             }
         }
         
-        // Получение favicon через несколько способов
-        function getBestFaviconUrl(url, domain) {
-            // приоритет: прямой favicon.ico + Google сервис
-            return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-        }
-        
-        // Парсинг HTML через прокси (CORS-free)
-        async function fetchPageData(url) {
-            try {
-                // Используем AllOrigins API (бесплатно, надёжно)
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('Прокси ошибка');
-                const data = await response.json();
-                const html = data.contents;
-                
-                // Парсим HTML прямо в DOM
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                // Заголовок
-                let title = '';
-                const titleTag = doc.querySelector('title');
-                if (titleTag) title = titleTag.innerText.trim();
-                if (!title) {
-                    const h1 = doc.querySelector('h1');
-                    if (h1) title = h1.innerText.trim();
-                }
-                if (title.length > 100) title = title.slice(0, 97) + '...';
-                
-                // Описание (meta description или Open Graph)
-                let description = '';
-                const metaDesc = doc.querySelector('meta[name="description"]');
-                if (metaDesc) description = metaDesc.getAttribute('content') || '';
-                if (!description) {
-                    const ogDesc = doc.querySelector('meta[property="og:description"]');
-                    if (ogDesc) description = ogDesc.getAttribute('content') || '';
-                }
-                if (!description) {
-                    const firstP = doc.querySelector('p');
-                    if (firstP) description = firstP.innerText.trim().slice(0, 200);
-                }
-                if (description.length > 180) description = description.slice(0, 177) + '...';
-                
-                // Иконка: ищем link[rel="icon"], link[rel="shortcut icon"], apple-touch-icon
-                let iconUrl = '';
-                const iconSelectors = [
-                    'link[rel="icon"]', 
-                    'link[rel="shortcut icon"]', 
-                    'link[rel="apple-touch-icon"]',
-                    'link[rel="apple-touch-icon-precomposed"]'
+        // Определяем тип ссылки и получаем превью
+        async function fetchPreviewData(url) {
+            // YouTube (youtu.be или youtube.com)
+            let youtubeId = null;
+            if (url.includes('youtu.be') || url.includes('youtube.com')) {
+                const patterns = [
+                    /youtu\.be\/([^?&]+)/,
+                    /youtube\.com\/watch\?v=([^&]+)/,
+                    /youtube\.com\/embed\/([^?&]+)/
                 ];
-                for (const selector of iconSelectors) {
-                    const link = doc.querySelector(selector);
-                    if (link && link.getAttribute('href')) {
-                        let href = link.getAttribute('href');
-                        if (href.startsWith('//')) href = 'https:' + href;
-                        else if (href.startsWith('/')) {
-                            const urlObj = new URL(url);
-                            href = urlObj.origin + href;
-                        } else if (!href.startsWith('http')) {
-                            const urlObj = new URL(url);
-                            href = urlObj.origin + '/' + href;
-                        }
-                        iconUrl = href;
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) {
+                        youtubeId = match[1];
                         break;
                     }
                 }
-                
-                // Извлекаем дополнительные метаданные: сайт / автор
-                let siteName = '';
-                const ogSite = doc.querySelector('meta[property="og:site_name"]');
-                if (ogSite) siteName = ogSite.getAttribute('content') || '';
-                
-                // keywords
-                let keywords = '';
-                const metaKw = doc.querySelector('meta[name="keywords"]');
-                if (metaKw) keywords = metaKw.getAttribute('content') || '';
-                
-                return {
-                    title: title || 'Без названия',
-                    description: description || 'Описание не найдено',
-                    iconUrl: iconUrl,
-                    siteName: siteName,
-                    keywords: keywords.slice(0, 100),
-                    rawUrl: url
-                };
-            } catch (error) {
-                console.error('Ошибка парсинга:', error);
-                throw new Error('Не удалось загрузить данные сайта');
+                if (youtubeId) {
+                    // Используем oEmbed YouTube API
+                    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${youtubeId}&format=json`;
+                    try {
+                        const response = await fetch(oembedUrl);
+                        const data = await response.json();
+                        return {
+                            type: 'youtube',
+                            title: data.title || 'YouTube Video',
+                            description: data.author_name || 'YouTube',
+                            imageUrl: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
+                            thumbnail: `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,
+                            videoId: youtubeId,
+                            siteName: 'YouTube'
+                        };
+                    } catch(e) {
+                        // fallback
+                        return {
+                            type: 'youtube',
+                            title: 'YouTube Video',
+                            description: 'Кликните для просмотра',
+                            imageUrl: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
+                            videoId: youtubeId,
+                            siteName: 'YouTube'
+                        };
+                    }
+                }
             }
+            
+            // Twitter / X
+            if (url.includes('twitter.com') || url.includes('x.com')) {
+                return {
+                    type: 'twitter',
+                    title: 'Twitter / X',
+                    description: 'Пост в социальной сети X (Twitter)',
+                    imageUrl: 'https://cdn-icons-png.flaticon.com/512/733/733579.png',
+                    siteName: 'Twitter'
+                };
+            }
+            
+            // TikTok
+            if (url.includes('tiktok.com')) {
+                return {
+                    type: 'tiktok',
+                    title: 'TikTok Video',
+                    description: 'Видео из TikTok',
+                    imageUrl: 'https://cdn-icons-png.flaticon.com/512/3046/3046126.png',
+                    siteName: 'TikTok'
+                };
+            }
+            
+            // Обычный сайт — пробуем через микро-API парсинга
+            try {
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    const html = data.contents;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    let title = '';
+                    const titleTag = doc.querySelector('title');
+                    if (titleTag) title = titleTag.innerText.trim();
+                    if (!title) title = url;
+                    if (title.length > 80) title = title.slice(0,77)+'...';
+                    
+                    let description = '';
+                    const metaDesc = doc.querySelector('meta[name="description"]');
+                    if (metaDesc) description = metaDesc.getAttribute('content') || '';
+                    if (description && description.length > 150) description = description.slice(0,147)+'...';
+                    if (!description) description = 'Обычная веб-страница';
+                    
+                    let ogImage = '';
+                    const ogImg = doc.querySelector('meta[property="og:image"]');
+                    if (ogImg) ogImage = ogImg.getAttribute('content');
+                    if (!ogImage) ogImage = 'https://www.google.com/s2/favicons?domain=' + new URL(url).hostname;
+                    
+                    let siteName = '';
+                    const ogSite = doc.querySelector('meta[property="og:site_name"]');
+                    if (ogSite) siteName = ogSite.getAttribute('content');
+                    if (!siteName) siteName = new URL(url).hostname;
+                    
+                    return {
+                        type: 'website',
+                        title: title,
+                        description: description,
+                        imageUrl: ogImage,
+                        siteName: siteName
+                    };
+                }
+            } catch(e) {
+                console.log('Обычный парсинг не удался');
+            }
+            
+            // Универсальный fallback
+            return {
+                type: 'link',
+                title: 'Ссылка',
+                description: 'Нажмите, чтобы открыть',
+                imageUrl: 'https://www.google.com/s2/favicons?domain=' + new URL(url).hostname,
+                siteName: new URL(url).hostname
+            };
         }
         
-        // Создание HTML карточки превью (красивая визуалка)
-        function renderPreviewCard(data) {
-            const domain = new URL(data.rawUrl).hostname;
-            const faviconFinal = data.iconUrl || getBestFaviconUrl(data.rawUrl, domain);
+        // Рендер карточки превью
+        function renderPreview(data, originalUrl) {
+            const displayImage = data.imageUrl || 'https://via.placeholder.com/800x400?text=No+Preview';
+            const domain = new URL(originalUrl).hostname;
             
-            // Формируем карточку
+            const badgeHtml = data.type === 'youtube' ? '<div class="video-badge">▶️ YouTube Video</div>' : 
+                              (data.type === 'twitter' ? '<div class="video-badge">🐦 Twitter</div>' :
+                              (data.type === 'tiktok' ? '<div class="video-badge">🎵 TikTok</div>' : ''));
+            
             const cardHtml = `
-                <div class="preview-card">
+                <div class="preview-card" id="previewCardElem">
+                    <div class="preview-image-area">
+                        <img class="preview-img" id="previewImg" src="${displayImage}" alt="preview" crossorigin="anonymous" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain}&sz=128'">
+                        ${badgeHtml}
+                    </div>
                     <div class="preview-header">
-                        <div class="favicon-large" id="cardFavicon">
-                            <img src="${faviconFinal}" alt="favicon" onerror="this.parentElement.innerHTML='🌐'; this.style.display='none';">
-                        </div>
-                        <div class="site-info">
-                            <div class="site-title">${escapeHtml(data.title)}</div>
-                            <div class="site-url">${escapeHtml(domain)}</div>
-                        </div>
+                        <div class="site-title">${escapeHtml(data.title)}</div>
+                        <div class="site-url">${escapeHtml(domain)}</div>
                     </div>
                     <div class="preview-body">
-                        <div class="description-box">
-                            <div class="description-text">${escapeHtml(data.description)}</div>
-                        </div>
-                        <div class="meta-grid">
-                            ${data.siteName ? `<span class="meta-item">🏷️ ${escapeHtml(data.siteName)}</span>` : ''}
-                            ${data.keywords ? `<span class="meta-item">🔑 ${escapeHtml(data.keywords)}</span>` : ''}
-                            <span class="meta-item">📅 ${new Date().toLocaleDateString()}</span>
-                        </div>
+                        <div class="description">${escapeHtml(data.description)}</div>
                     </div>
                     <div class="preview-actions">
-                        <a href="${data.rawUrl}" target="_blank" rel="noopener noreferrer" class="btn-open">🌐 Открыть сайт</a>
-                        <button id="downloadCardBtn" class="btn-download">📸 Скачать превью (PNG)</button>
+                        <a href="${originalUrl}" target="_blank" rel="noopener noreferrer" class="btn-open">🌐 Открыть</a>
+                        <button id="downloadBtnAction" class="btn-download">📸 Скачать превью (PNG)</button>
                     </div>
                 </div>
             `;
             
             previewContainer.innerHTML = cardHtml;
             previewContainer.classList.remove('hidden');
+            currentImageUrl = displayImage;
             
-            // Привязываем событие скачивания после рендера
-            const downloadBtn = document.getElementById('downloadCardBtn');
+            // Добавляем событие скачивания
+            const downloadBtn = document.getElementById('downloadBtnAction');
             if (downloadBtn) {
-                downloadBtn.addEventListener('click', () => downloadCardAsImage());
+                downloadBtn.addEventListener('click', () => downloadPreviewAsImage());
             }
         }
         
-        // Экранирование HTML
+        // Скачивание карточки как PNG
+        async function downloadPreviewAsImage() {
+            const cardElem = document.querySelector('.preview-card');
+            if (!cardElem) {
+                setStatus('Карточка не найдена', true);
+                return;
+            }
+            
+            setStatus('📸 Создаём изображение...', false, true);
+            
+            try {
+                if (typeof html2canvas === 'undefined') {
+                    await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+                }
+                
+                const canvas = await html2canvas(cardElem, {
+                    scale: 2.5,
+                    backgroundColor: '#0b0e12',
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false
+                });
+                
+                const link = document.createElement('a');
+                link.download = `preview_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                setStatus('✅ Готово! Изображение сохранено в галерею/загрузки', false);
+            } catch(err) {
+                console.error(err);
+                setStatus('Ошибка: не удалось сохранить', true);
+            }
+        }
+        
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -511,62 +552,18 @@
                 if (m === '<') return '&lt;';
                 if (m === '>') return '&gt;';
                 return m;
-            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-                return c;
             });
         }
         
-        // Функция скачивания карточки как PNG (используем html2canvas)
-        async function downloadCardAsImage() {
-            const previewCardElem = document.querySelector('.preview-card');
-            if (!previewCardElem) {
-                setStatus('Карточка не найдена, попробуйте перезагрузить превью', true);
+        // Основная загрузка
+        async function loadPreview() {
+            const rawUrl = urlInput.value.trim();
+            const finalUrl = normalizeUrl(rawUrl);
+            if (!finalUrl) {
+                setStatus('Введите корректную ссылку (например, https://youtu.be/... или google.com)', true);
                 return;
             }
             
-            setStatus('📸 Создаём изображение превью...', false, true);
-            
-            try {
-                // Динамически подгружаем html2canvas если ещё не загружена
-                if (typeof html2canvas === 'undefined') {
-                    await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
-                }
-                
-                const canvas = await html2canvas(previewCardElem, {
-                    scale: 2.5,
-                    backgroundColor: '#0b0e12',
-                    useCORS: true,
-                    allowTaint: false,
-                    logging: false,
-                    onclone: (clonedDoc, element) => {
-                        // Убедимся что favicon отображается
-                        const clonedImg = clonedDoc.querySelector('#cardFavicon img');
-                        if (clonedImg && !clonedImg.complete) {
-                            // fallback
-                        }
-                    }
-                });
-                
-                const imageData = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                const filename = `preview_${Date.now()}.png`;
-                link.download = filename;
-                link.href = imageData;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                setStatus('✅ Превью сохранено на телефон! Проверьте галерею или папку загрузок.', false);
-            } catch (err) {
-                console.error(err);
-                setStatus('Ошибка создания скриншота: ' + err.message, true);
-            }
-        }
-        
-        // Загрузка скрипта динамически
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = resolve;
-                script.o
+            loadBtn.disabled = true;
+            previewContainer.classList.add('hidden');
+            setStatus(`Анализируем
