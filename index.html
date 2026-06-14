@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ThunderPreview — Живое превью сайтов</title>
+    <title>LinkPreview — умное превью сайтов</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,7 @@
         }
 
         .glass-card {
-            max-width: 850px;
+            max-width: 750px;
             width: 100%;
             margin: 0 auto;
             background: #23272f;
@@ -59,7 +59,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.75rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             align-items: center;
         }
 
@@ -83,11 +83,6 @@
             background: #0a0e12;
         }
 
-        .url-input::placeholder {
-            color: #5b6479;
-            font-family: inherit;
-        }
-
         .load-btn {
             background: #2f3742;
             border: none;
@@ -105,15 +100,16 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
-        .load-btn:hover {
+        .load-btn:hover:not(:disabled) {
             background: #3b82f6;
             transform: scale(0.97);
             color: white;
             box-shadow: 0 6px 14px rgba(59,130,246,0.3);
         }
 
-        .load-btn:active {
-            transform: scale(0.96);
+        .load-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .status-area {
@@ -128,6 +124,7 @@
             gap: 0.6rem;
             flex-wrap: wrap;
             border-left: 4px solid #2d3a4b;
+            min-height: 60px;
         }
 
         .spinner {
@@ -142,165 +139,150 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .hidden {
-            display: none;
-        }
-
-        /* блок превью с картинкой */
-        .preview-container {
+        /* блок превью */
+        .preview-card {
             background: #0b0e12;
             border-radius: 1.5rem;
             overflow: hidden;
-            margin: 1.5rem 0 1.2rem 0;
+            margin-top: 1rem;
             border: 1px solid #2e353f;
-            transition: all 0.25s;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
         }
 
         .preview-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.2rem;
             background: #13181f;
-            padding: 0.9rem 1.2rem;
             border-bottom: 1px solid #282f38;
-            flex-wrap: wrap;
-            gap: 0.5rem;
         }
 
-        .site-meta {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-        }
-
-        .favicon {
-            width: 32px;
-            height: 32px;
+        .favicon-large {
+            width: 48px;
+            height: 48px;
             background: #1e2a36;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 2rem;
+            flex-shrink: 0;
+            overflow: hidden;
         }
 
-        .favicon img {
-            width: 22px;
-            height: 22px;
-            border-radius: 4px;
+        .favicon-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .site-info {
+            flex: 1;
+            min-width: 0;
         }
 
         .site-title {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #e2e8ff;
-            max-width: 280px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
         }
 
         .site-url {
-            font-size: 0.7rem;
-            color: #7c85a2;
+            font-size: 0.75rem;
+            color: #8b95b0;
             word-break: break-all;
         }
 
-        .preview-image-wrapper {
-            background: #0a0c10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 280px;
-            max-height: 450px;
-            overflow: auto;
-            position: relative;
+        .preview-body {
+            padding: 1.2rem;
         }
 
-        .preview-img {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: contain;
-            background: #fff;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+        .description-box {
+            background: #0f131a;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #3b82f6;
         }
 
-        .placeholder-preview {
-            background: #11161c;
+        .description-text {
+            color: #cbd5e6;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .meta-grid {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            flex-wrap: wrap;
             gap: 1rem;
-            padding: 3rem 2rem;
-            text-align: center;
-            color: #6a738b;
+            margin-top: 0.8rem;
+            font-size: 0.75rem;
+            color: #7e88a3;
         }
 
-        .download-area {
+        .meta-item {
+            background: #0a0d12;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+        }
+
+        .preview-actions {
             display: flex;
             justify-content: flex-end;
-            margin-top: 0.8rem;
-            margin-bottom: 0.5rem;
             gap: 0.8rem;
+            padding: 1rem 1.2rem 1.2rem;
+            border-top: 1px solid #232831;
             flex-wrap: wrap;
         }
 
-        .download-btn {
-            background: #1e2c3a;
-            border: 1px solid #3f4a5a;
-            padding: 0.8rem 2rem;
-            border-radius: 3rem;
+        .btn-download, .btn-open {
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.7rem;
-            color: #cbd5ff;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .download-btn.active {
-            background: #0f2b3b;
-            border-color: #3b82f6;
-            color: white;
-            box-shadow: 0 2px 10px rgba(59,130,246,0.3);
-        }
-
-        .download-btn.active:hover {
-            background: #2563eb;
-            transform: scale(1.02);
-        }
-
-        .download-btn.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-            filter: grayscale(0.2);
-        }
-
-        .open-link-btn {
-            background: #1a242f;
-            border: 1px solid #3e4a5a;
-            padding: 0.8rem 1.5rem;
-            border-radius: 3rem;
-            font-weight: 500;
+            border: none;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #b9c7e6;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.85rem;
-            text-decoration: none;
         }
 
-        .open-link-btn:hover {
-            background: #2d3a48;
+        .btn-download {
+            background: #1e3a5f;
+            color: #bbd7ff;
+            border: 1px solid #2c5282;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #2563eb;
             color: white;
+            transform: scale(1.02);
+        }
+
+        .btn-open {
+            background: #242b36;
+            color: #b9c3dc;
+            text-decoration: none;
+            border: 1px solid #3a4353;
+        }
+
+        .btn-open:hover {
+            background: #2f3a48;
+            color: white;
+        }
+
+        .btn-download:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
         }
 
         .info-note {
@@ -313,16 +295,10 @@
         }
 
         @media (max-width: 550px) {
-            .glass-card {
-                padding: 1.2rem;
-            }
-            .preview-image-wrapper {
-                min-height: 200px;
-            }
-            .site-title {
-                max-width: 150px;
-                font-size: 0.85rem;
-            }
+            .glass-card { padding: 1.2rem; }
+            .preview-header { flex-direction: column; text-align: center; }
+            .favicon-large { width: 56px; height: 56px; }
+            .site-title { font-size: 1rem; }
         }
     </style>
 </head>
@@ -331,50 +307,26 @@
 <div class="glass-card">
     <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
         <div>
-            <h1>⚡ ThunderPreview</h1>
-            <div class="sub">вставь ссылку — получи скриншот сайта и сохрани на телефон</div>
+            <h1>🔗 LinkPreview</h1>
+            <div class="sub">Вставь ссылку → моментальное превью с данными сайта + скачивание на телефон</div>
         </div>
-        <div style="font-size: 1.5rem;">📸</div>
+        <div style="font-size: 1.4rem;">✨</div>
     </div>
 
     <div class="input-group">
-        <input type="text" id="urlInput" class="url-input" placeholder="https://google.com или github.com" value="https://google.com">
-        <button id="loadPreviewBtn" class="load-btn">🚀 Сделать превью</button>
+        <input type="text" id="urlInput" class="url-input" placeholder="https://github.com или yandex.ru" value="https://github.com">
+        <button id="loadBtn" class="load-btn">📡 Загрузить превью</button>
     </div>
 
-    <div id="statusBox" class="status-area">
-        <span>💡 Введи любой URL и нажми «Сделать превью» — получишь скриншот сайта.</span>
+    <div id="statusArea" class="status-area">
+        <span>💡 Введите URL и нажмите "Загрузить превью" — я сам получу данные сайта.</span>
     </div>
 
-    <div id="previewCard" style="display: none;">
-        <div class="preview-container">
-            <div class="preview-header">
-                <div class="site-meta">
-                    <div class="favicon" id="faviconImg">🌐</div>
-                    <div>
-                        <div class="site-title" id="previewTitle">—</div>
-                        <div class="site-url" id="previewUrl">—</div>
-                    </div>
-                </div>
-                <div style="font-size: 0.7rem; background: #1f2937; padding: 0.2rem 0.7rem; border-radius: 20px;">✨ живой скриншот</div>
-            </div>
-            <div class="preview-image-wrapper" id="previewImageWrapper">
-                <img id="previewImage" class="preview-img" alt="превью сайта" style="display: none;">
-                <div id="previewPlaceholder" class="placeholder-preview" style="display: flex;">
-                    <span>🖼️</span>
-                    <span>Ожидание загрузки превью...</span>
-                </div>
-            </div>
-        </div>
-        <div class="download-area">
-            <a id="openSiteLink" class="open-link-btn" href="#" target="_blank" rel="noopener noreferrer">🌐 Открыть сайт</a>
-            <button id="downloadSnapshotBtn" class="download-btn disabled">📸 Скачать превью (PNG)</button>
-        </div>
-    </div>
-    
+    <div id="previewContainer" class="hidden"></div>
+
     <div class="info-note">
-        📲 <strong>Как работает:</strong> сервис через API делает настоящий скриншот любого сайта — даже если тот запрещает iframe.<br>
-        ✅ Нажми «Сделать превью» → получи картинку → «Скачать превью» сохранит её в галерею телефона.
+        📲 <strong>Как это работает:</strong> Я загружаю HTML страницы через прокси, вытаскиваю заголовок, описание, иконку и создаю красивую карточку превью.<br>
+        ⬇️ Карточку можно скачать как PNG и сохранить в галерею телефона!
     </div>
 </div>
 
@@ -382,20 +334,22 @@
     (function() {
         // DOM элементы
         const urlInput = document.getElementById('urlInput');
-        const loadBtn = document.getElementById('loadPreviewBtn');
-        const statusBox = document.getElementById('statusBox');
-        const previewCardDiv = document.getElementById('previewCard');
-        const previewImage = document.getElementById('previewImage');
-        const previewPlaceholder = document.getElementById('previewPlaceholder');
-        const previewTitleSpan = document.getElementById('previewTitle');
-        const previewUrlSpan = document.getElementById('previewUrl');
-        const faviconDiv = document.getElementById('faviconImg');
-        const downloadBtn = document.getElementById('downloadSnapshotBtn');
-        const openSiteLink = document.getElementById('openSiteLink');
+        const loadBtn = document.getElementById('loadBtn');
+        const statusArea = document.getElementById('statusArea');
+        const previewContainer = document.getElementById('previewContainer');
         
-        let currentPreviewUrl = '';
-        let currentImageBlob = null;
-        let currentImageSrc = '';
+        let currentPreviewData = null;
+        
+        // Функция показа статуса
+        function setStatus(message, isError = false, isLoading = false) {
+            statusArea.innerHTML = '';
+            if (isLoading) {
+                statusArea.innerHTML = `<span class="spinner"></span><span>${message}</span>`;
+            } else {
+                const icon = isError ? '❌' : '✅';
+                statusArea.innerHTML = `<span>${icon} ${message}</span>`;
+            }
+        }
         
         // Нормализация URL
         function normalizeUrl(raw) {
@@ -412,155 +366,207 @@
             }
         }
         
-        // Установка статуса
-        function setStatus(message, isError = false, withSpinner = false) {
-            statusBox.innerHTML = '';
-            if (withSpinner) {
-                statusBox.innerHTML = `<span class="spinner"></span><span>${message}</span>`;
-            } else {
-                const prefix = isError ? '❌ ' : (message.includes('успешно') ? '✅ ' : '🔍 ');
-                statusBox.innerHTML = `<span>${prefix} ${message}</span>`;
-            }
+        // Получение favicon через несколько способов
+        function getBestFaviconUrl(url, domain) {
+            // приоритет: прямой favicon.ico + Google сервис
+            return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
         }
         
-        // Получить favicon через Google сервис
-        function updateFavicon(url) {
+        // Парсинг HTML через прокси (CORS-free)
+        async function fetchPageData(url) {
             try {
-                let domain = new URL(url).hostname;
-                let faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-                faviconDiv.innerHTML = `<img src="${faviconUrl}" alt="favicon" onerror="this.parentElement.innerHTML='🌐'">`;
-            } catch(e) {
-                faviconDiv.innerHTML = '🌐';
-            }
-        }
-        
-        // Попытка получить заголовок страницы через fetch + парсинг мета-тегов (через прокси для обхода CORS)
-        async function fetchPageTitle(url) {
-            try {
-                // Используем Cors-Anywhere демо (публичное прокси, но для простых запросов норм)
-                // Для надёжности добавим fallback — если не получится, просто покажем домен
+                // Используем AllOrigins API (бесплатно, надёжно)
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-                const response = await fetch(proxyUrl, { timeout: 5000 });
-                if (response.ok) {
-                    const data = await response.json();
-                    const html = data.contents;
-                    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-                    if (titleMatch && titleMatch[1]) {
-                        let title = titleMatch[1].trim();
-                        if (title.length > 60) title = title.slice(0,57) + '...';
-                        return title;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Прокси ошибка');
+                const data = await response.json();
+                const html = data.contents;
+                
+                // Парсим HTML прямо в DOM
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Заголовок
+                let title = '';
+                const titleTag = doc.querySelector('title');
+                if (titleTag) title = titleTag.innerText.trim();
+                if (!title) {
+                    const h1 = doc.querySelector('h1');
+                    if (h1) title = h1.innerText.trim();
+                }
+                if (title.length > 100) title = title.slice(0, 97) + '...';
+                
+                // Описание (meta description или Open Graph)
+                let description = '';
+                const metaDesc = doc.querySelector('meta[name="description"]');
+                if (metaDesc) description = metaDesc.getAttribute('content') || '';
+                if (!description) {
+                    const ogDesc = doc.querySelector('meta[property="og:description"]');
+                    if (ogDesc) description = ogDesc.getAttribute('content') || '';
+                }
+                if (!description) {
+                    const firstP = doc.querySelector('p');
+                    if (firstP) description = firstP.innerText.trim().slice(0, 200);
+                }
+                if (description.length > 180) description = description.slice(0, 177) + '...';
+                
+                // Иконка: ищем link[rel="icon"], link[rel="shortcut icon"], apple-touch-icon
+                let iconUrl = '';
+                const iconSelectors = [
+                    'link[rel="icon"]', 
+                    'link[rel="shortcut icon"]', 
+                    'link[rel="apple-touch-icon"]',
+                    'link[rel="apple-touch-icon-precomposed"]'
+                ];
+                for (const selector of iconSelectors) {
+                    const link = doc.querySelector(selector);
+                    if (link && link.getAttribute('href')) {
+                        let href = link.getAttribute('href');
+                        if (href.startsWith('//')) href = 'https:' + href;
+                        else if (href.startsWith('/')) {
+                            const urlObj = new URL(url);
+                            href = urlObj.origin + href;
+                        } else if (!href.startsWith('http')) {
+                            const urlObj = new URL(url);
+                            href = urlObj.origin + '/' + href;
+                        }
+                        iconUrl = href;
+                        break;
                     }
                 }
-            } catch(e) {
-                console.log("Не удалось получить заголовок:", e);
+                
+                // Извлекаем дополнительные метаданные: сайт / автор
+                let siteName = '';
+                const ogSite = doc.querySelector('meta[property="og:site_name"]');
+                if (ogSite) siteName = ogSite.getAttribute('content') || '';
+                
+                // keywords
+                let keywords = '';
+                const metaKw = doc.querySelector('meta[name="keywords"]');
+                if (metaKw) keywords = metaKw.getAttribute('content') || '';
+                
+                return {
+                    title: title || 'Без названия',
+                    description: description || 'Описание не найдено',
+                    iconUrl: iconUrl,
+                    siteName: siteName,
+                    keywords: keywords.slice(0, 100),
+                    rawUrl: url
+                };
+            } catch (error) {
+                console.error('Ошибка парсинга:', error);
+                throw new Error('Не удалось загрузить данные сайта');
             }
-            return null;
         }
         
-        // Основная функция: генерация скриншота через API thumbnails (используем screenshotmachine или类似)
-        // Бесплатный ключ не нужен? Используем публичный сервис: webshot.de与其... но нужен стабильный
-        // Лучший надёжный вариант — thumbnail.ws (бесплатно до 100 скриншотов в день) либо microlink.
-        // Использую мощный сервис: image.thum.io (бесплатно, без ключа, даёт скриншот)
-        // Документация: https://image.thum.io/ — идеально для превью
-        function generateScreenshotUrl(siteUrl) {
-            // Используем сервис thum.io (быстрый, надёжный, даёт скриншот всей страницы)
-            // Добавим параметры: ширина 1200, качество, full page
-            const encodedUrl = encodeURIComponent(siteUrl);
-            // thum.io позволяет захватывать целые страницы с опцией /full/
-            return `https://image.thum.io/get/fullpage/width/1200/noanimate/${encodedUrl}`;
+        // Создание HTML карточки превью (красивая визуалка)
+        function renderPreviewCard(data) {
+            const domain = new URL(data.rawUrl).hostname;
+            const faviconFinal = data.iconUrl || getBestFaviconUrl(data.rawUrl, domain);
+            
+            // Формируем карточку
+            const cardHtml = `
+                <div class="preview-card">
+                    <div class="preview-header">
+                        <div class="favicon-large" id="cardFavicon">
+                            <img src="${faviconFinal}" alt="favicon" onerror="this.parentElement.innerHTML='🌐'; this.style.display='none';">
+                        </div>
+                        <div class="site-info">
+                            <div class="site-title">${escapeHtml(data.title)}</div>
+                            <div class="site-url">${escapeHtml(domain)}</div>
+                        </div>
+                    </div>
+                    <div class="preview-body">
+                        <div class="description-box">
+                            <div class="description-text">${escapeHtml(data.description)}</div>
+                        </div>
+                        <div class="meta-grid">
+                            ${data.siteName ? `<span class="meta-item">🏷️ ${escapeHtml(data.siteName)}</span>` : ''}
+                            ${data.keywords ? `<span class="meta-item">🔑 ${escapeHtml(data.keywords)}</span>` : ''}
+                            <span class="meta-item">📅 ${new Date().toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="preview-actions">
+                        <a href="${data.rawUrl}" target="_blank" rel="noopener noreferrer" class="btn-open">🌐 Открыть сайт</a>
+                        <button id="downloadCardBtn" class="btn-download">📸 Скачать превью (PNG)</button>
+                    </div>
+                </div>
+            `;
+            
+            previewContainer.innerHTML = cardHtml;
+            previewContainer.classList.remove('hidden');
+            
+            // Привязываем событие скачивания после рендера
+            const downloadBtn = document.getElementById('downloadCardBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', () => downloadCardAsImage());
+            }
         }
         
-        // Альтернативный резервный скриншот-сервис (если thum.io не сработает)
-        function getFallbackScreenshotUrl(siteUrl) {
-            const encoded = encodeURIComponent(siteUrl);
-            return `https://api.microlink.io/?url=${encoded}&screenshot=true&meta=false&embed=screenshot.url`;
-            // Это микролинк, но его ответ — JSON, придётся обрабатывать. Для простоты оставим thum.io основной.
-            // thum.io отлично работает.
+        // Экранирование HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
         }
         
-        // Загрузить превью
-        async function loadPreview() {
-            let rawUrl = urlInput.value;
-            let finalUrl = normalizeUrl(rawUrl);
-            if (!finalUrl) {
-                setStatus('Некорректная ссылка. Пример: google.com или https://yandex.ru', true);
+        // Функция скачивания карточки как PNG (используем html2canvas)
+        async function downloadCardAsImage() {
+            const previewCardElem = document.querySelector('.preview-card');
+            if (!previewCardElem) {
+                setStatus('Карточка не найдена, попробуйте перезагрузить превью', true);
                 return;
             }
             
-            // блокируем на время загрузки
-            loadBtn.disabled = true;
-            downloadBtn.classList.add('disabled');
-            previewCardDiv.style.display = 'none';
-            currentPreviewUrl = finalUrl;
-            currentImageBlob = null;
-            if (previewImage.src) {
-                previewImage.src = '';
-            }
-            previewImage.style.display = 'none';
-            previewPlaceholder.style.display = 'flex';
-            previewPlaceholder.innerHTML = '<span>🖼️</span><span>Генерируем скриншот сайта... подождите несколько секунд</span>';
+            setStatus('📸 Создаём изображение превью...', false, true);
             
-            setStatus(`Создаём превью для ${finalUrl} ...`, false, true);
-            
-            // обновляем мета-данные
-            previewUrlSpan.innerText = finalUrl;
-            updateFavicon(finalUrl);
-            openSiteLink.href = finalUrl;
-            
-            // пробуем получить заголовок страницы асинхронно
-            fetchPageTitle(finalUrl).then(title => {
-                if (title) previewTitleSpan.innerText = title;
-                else {
-                    try {
-                        let host = new URL(finalUrl).hostname;
-                        previewTitleSpan.innerText = host.replace(/^www\./, '');
-                    } catch(e) { previewTitleSpan.innerText = 'Сайт'; }
+            try {
+                // Динамически подгружаем html2canvas если ещё не загружена
+                if (typeof html2canvas === 'undefined') {
+                    await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
                 }
-            }).catch(() => {
-                try {
-                    let host = new URL(finalUrl).hostname;
-                    previewTitleSpan.innerText = host.replace(/^www\./, '');
-                } catch(e) { previewTitleSpan.innerText = 'Интернет-страница'; }
-            });
-            
-            // Генерируем URL скриншота через thum.io
-            const screenshotUrl = generateScreenshotUrl(finalUrl);
-            
-            // Создаём image и ждём загрузки
-            const img = new Image();
-            img.crossOrigin = "Anonymous"; // для CORS, если потребуется
-            
-            let loadSuccess = false;
-            
-            const timeoutId = setTimeout(() => {
-                if (!loadSuccess) {
-                    setStatus('⚠️ Сервис превью долго отвечает, но попробуйте ещё раз или проверьте ссылку.', true);
-                    loadBtn.disabled = false;
-                    downloadBtn.classList.add('disabled');
-                    previewPlaceholder.innerHTML = '<span>⚠️</span><span>Не удалось создать скриншот. Проверьте ссылку или попробуйте позже.</span>';
-                }
-            }, 15000);
-            
-            img.onload = () => {
-                loadSuccess = true;
-                clearTimeout(timeoutId);
-                // Всё успешно
-                previewImage.src = screenshotUrl;
-                previewImage.style.display = 'block';
-                previewPlaceholder.style.display = 'none';
-                previewCardDiv.style.display = 'block';
-                setStatus('✅ Превью готово! Нажмите "Скачать превью", чтобы сохранить на телефон.', false);
-                downloadBtn.classList.remove('disabled');
-                loadBtn.disabled = false;
                 
-                // Сохраняем Blob для скачивания (изображение уже загружено)
-                fetch(screenshotUrl)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        currentImageBlob = blob;
-                        currentImageSrc = URL.createObjectURL(blob);
-                    })
-                    .catch(err => {
-                        console.warn("Не удалось сконвертировать в blob, но можно скачать через canvas");
-                        currentImageBlob = null;
-           
+                const canvas = await html2canvas(previewCardElem, {
+                    scale: 2.5,
+                    backgroundColor: '#0b0e12',
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false,
+                    onclone: (clonedDoc, element) => {
+                        // Убедимся что favicon отображается
+                        const clonedImg = clonedDoc.querySelector('#cardFavicon img');
+                        if (clonedImg && !clonedImg.complete) {
+                            // fallback
+                        }
+                    }
+                });
+                
+                const imageData = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                const filename = `preview_${Date.now()}.png`;
+                link.download = filename;
+                link.href = imageData;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                setStatus('✅ Превью сохранено на телефон! Проверьте галерею или папку загрузок.', false);
+            } catch (err) {
+                console.error(err);
+                setStatus('Ошибка создания скриншота: ' + err.message, true);
+            }
+        }
+        
+        // Загрузка скрипта динамически
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.o
