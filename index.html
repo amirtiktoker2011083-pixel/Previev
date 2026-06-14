@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ThunderPreview — Загрузка превью сайта</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1a1e24;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #eef2ff;
+            padding: 1.5rem 1rem 2.5rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* основной контейнер */
+        .glass-card {
+            max-width: 750px;
+            width: 100%;
+            margin: 0 auto;
+            background: #23272f;
+            border-radius: 2rem;
+            padding: 1.75rem 1.5rem 2rem 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(2px);
+            transition: all 0.2s ease;
+        }
+
+        h1 {
+            font-size: 1.85rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #b9c3e6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+
+        .sub {
+            color: #9aa2b5;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            border-left: 3px solid #3b82f6;
+            padding-left: 0.7rem;
+            margin-top: 0.2rem;
+        }
+
+        /* строка ввода + кнопка */
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .url-input {
+            flex: 1;
+            background: #0f1217;
+            border: 1px solid #323a44;
+            border-radius: 1.75rem;
+            padding: 0.9rem 1.3rem;
+            font-size: 1rem;
+            color: #f0f3fa;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s;
+            font-family: monospace;
+        }
+
+        .url-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            background: #0a0e12;
+        }
+
+        .url-input::placeholder {
+            color: #5b6479;
+            font-family: inherit;
+        }
+
+        .load-btn {
+            background: #2f3742;
+            border: none;
+            padding: 0 1.8rem;
+            height: 3.3rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #eef2ff;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .load-btn:hover {
+            background: #3b82f6;
+            transform: scale(0.97);
+            color: white;
+            box-shadow: 0 6px 14px rgba(59,130,246,0.3);
+        }
+
+        .load-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* статус/прелоадер */
+        .status-area {
+            background: #1e2229;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: #a9b2cc;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            border-left: 4px solid #2d3a4b;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(59,130,246,0.2);
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .hidden {
+            display: none;
+        }
+
+        /* блок превью */
+        .preview-container {
+            background: #0b0e12;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            margin: 1.5rem 0 1.2rem 0;
+            border: 1px solid #2e353f;
+            transition: all 0.25s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #13181f;
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px solid #282f38;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .site-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .favicon {
+            width: 28px;
+            height: 28px;
+            background: #1e2a36;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .site-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #e2e8ff;
+            max-width: 240px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .site-url {
+            font-size: 0.7rem;
+            color: #7c85a2;
+            word-break: break-all;
+        }
+
+        .preview-frame {
+            background: white;
+            width: 100%;
+            height: 280px;
+            border: none;
+            display: block;
+        }
+
+        .placeholder-preview {
+            background: #11161c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            text-align: center;
+            color: #6a738b;
+            min-height: 200px;
+        }
+
+        /* кнопка скачивания */
+        .download-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .download-btn {
+            background: #1e2c3a;
+            border: 1px solid #3f4a5a;
+            padding: 0.8rem 2rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            color: #cbd5ff;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .download-btn.active {
+            background: #0f2b3b;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 10px rgba(59,130,246,0.3);
+        }
+
+        .download-btn.active:hover {
+            background: #2563eb;
+            transform: scale(1.01);
+        }
+
+        .download-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.2);
+        }
+
+        .info-note {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1.8rem;
+            color: #5f6a80;
+            border-top: 1px solid #2d333c;
+            padding-top: 1rem;
+        }
+
+        a {
+            color: #6d8eff;
+            text-decoration: none;
+        }
+
+        @media (max-width: 550px) {
+            .glass-card {
+                padding: 1.2rem;
+            }
+            .preview-frame {
+                height: 220px;
+            }
+            .site-title {
+                max-width: 150px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+        <div>
+            <h1>⚡ ThunderPreview</h1>
+            <div class="sub">вставь ссылку — получи превью и сохрани на телефон</div>
+        </div>
+        <div style="font-size: 1.5rem;">🌍</div>
+    </div>
+
+    <!-- строка ввода -->
+    <div class="input-group">
+        <input type="text" id="urlInput" class="url-input" placeholder="https://example.com или любой сайт" value="https://example.com">
+        <button id="loadPreviewBtn" class="load-btn">🚀 Загрузить превью</button>
+    </div>
+
+    <!-- статус загрузки -->
+    <div id="statusBox" class="status-area">
+        <span>💡 Готов к работе. Введите URL и нажмите загрузить.</span>
+    </div>
+
+    <!-- блок превью (изначально скрыт) -->
+    <div id="previewCard" style="display: none;">
+        <div class="preview-container">
+            <div class="preview-header">
+                <div class="site-meta">
+                    <div class="favicon" id="faviconImg">🌐</div>
+                    <div>
+                        <div class="site-title" id="previewTitle">—</div>
+                        <div class="site-url" id="previewUrl">—</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.7rem; background: #1f2937; padding: 0.2rem 0.7rem; border-radius: 20px;">⚡ превью</div>
+            </div>
+            <!-- iframe для предпросмотра -->
+            <iframe id="previewIframe" class="preview-frame" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals" title="предпросмотр сайта"></iframe>
+        </div>
+        <div class="download-area">
+            <button id="downloadSnapshotBtn" class="download-btn disabled">📸 Скачать превью (скриншот)</button>
+        </div>
+    </div>
+    
+    <div class="info-note">
+        📲 <strong>Как скачать на телефон:</strong> после загрузки превью нажмите «Скачать превью» — изображение сохранится в галерею (или папку загрузок).<br>
+        ⚠️ Некоторые сайты могут блокировать iframe — тогда превью будет пустым. Для максимальной совместимости используется прямой iframe + альтернативный захват через HTML2Canvas.
+    </div>
+</div>
+
+<!-- Библиотека html2canvas для скриншотов (качественное превью) -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+    (function() {
+        // DOM элементы
+        const urlInput = document.getElementById('urlInput');
+        const loadBtn = document.getElementById('loadPreviewBtn');
+        const statusBox = document.getElementById('statusBox');
+        const previewCardDiv = document.getElementById('previewCard');
+        const previewIframe = document.getElementById('previewIframe');
+        const previewTitleSpan = document.getElementById('previewTitle');
+        const previewUrlSpan = document.getElementById('previewUrl');
+        const faviconDiv = document.getElementById('faviconImg');
+        const downloadBtn = document.getElementById('downloadSnapshotBtn');
+        
+        // состояние: активная загрузка, текущий URL для скриншота
+        let currentPreviewUrl = '';
+        let isLoading = false;
+        let currentIframeLoaded = false;
+        let lastScreenshotData = null;   // храним base64 последнего скриншота для скачивания
+        
+        // вспомогательные функции UI
+        function setStatus(message, isError = false, isLoadingFlag = false) {
+            statusBox.innerHTML = '';
+            if (isLoadingFlag) {
+                statusBox.innerHTML = `<span class="spinner"></span><span>${message}</span>`;
+            } else {
+                const prefix = isError ? '❌ ' : (message.includes('успешно') ? '✅ ' : '🔍 ');
+                statusBox.innerHTML = `<span>${prefix} ${message}</span>`;
+            }
+        }
+        
+        function clearStatusLoader() {
+            if (statusBox.innerHTML.includes('spinner')) {
+                // оставляем текст, но убираем лоадер если есть финальное сообщение
+            }
+        }
+        
+        // парсинг URL: добваляем https:// если нет протокола
+        function normalizeUrl(raw) {
+            let url = raw.trim();
+            if (!url) return '';
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+            try {
+                // валидация
+                new URL(url);
+                return url;
+            } catch(e) {
+                return '';
+            }
+        }
+        
+        // обновить мета-данные по возможности из iframe (тайтл + favicon)
+        function tryExtractMetaFromIframe() {
+            try {
+                // доступ к iframe содержимому возможен только если тот же origin, но хотя бы пытаемся
+                const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow?.document;
+                if (iframeDoc && iframeDoc.title && iframeDoc.title.trim()) {
+                    let pageTitle = iframeDoc.title.trim();
+                    if(pageTitle.length > 60) pageTitle = pageTitle.slice(0,57)+'...';
+                    previewTitleSpan.innerText = pageTitle;
+                } else {
+                    // если нет заголовка, используем домен
+                    try {
+                        let urlObj = new URL(currentPreviewUrl);
+                        previewTitleSpan.innerText = urlObj.hostname.replace(/^www\./,'');
+                    } catch(e){}
+                }
+                // favicon: ищем link[rel="icon"] или используем /favicon.ico
+                if (iframeDoc) {
+                    let iconLink = iframeDoc.querySelector("link[rel~='icon']");
+                    if (iconLink && iconLink.href) {
+                        faviconDiv.innerHTML = `<img src="${iconLink.href}" width="22" height="22" style="border-radius:4px;" onerror="this.parentElement.innerHTML='🌐'">`;
+                        return;
+                    }
+                }
+                // стандартный favicon по домену
+                let domainFavicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(currentPreviewUrl)}&sz=32`;
+                faviconDiv.innerHTML = `<img src="${domainFavicon}" width="22" height="22" style="border-radius:4px;" onerror="this.parentElement.innerHTML='🌐'">`;
+            } catch(e) {
+                // кросс-домен иногда блокирует доступ — ставим favicon через google
+                let domainFavicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(currentPreviewUrl)}&sz=32`;
+                faviconDiv.innerHTML = `<img src="${domainFavicon}" width="22" height="22" style="border-radius:4px;" onerror="this.parentElement.innerHTML='🌐'">`;
+            }
+        }
+        
+        // сделать скриншот iframe используя html2canvas (не прямой iframe, а обёртка? html2canvas не рендерит iframe кросс-домен,
+        // поэтому лучший способ: используем сервисный подход? но для современных телефонов лучше использовать утилиту захвата самого превью-блока?
+        // ВАЖНО: html2canvas не может отрисовать содержимое iframe с другого домена из-за политики безопасности.
+        // Альтернатива: генерируем «превью» из мета-тегов? Но пользователь хочет скриншот видимого превью.
+        // Решение: использовать резервный метод — захват iframe не сработает. Но мы можем захватить блок .preview-container или показать предупреждение.
+        // Однако есть современный хак: использовать библиотеку для создания "скриншота" через отрисовку в canvas из iframe (невозможно из-за CORS).
+        // Для удобства пользователя реализуем экспорт того, что ВИДИТ пользователь — видимая область .preview-container с подложкой.
+        // Выведем предупреждение, что скриншот сохранит шапку и заглушку, но если iframe отображается, то внутри iframe не скопируется.
+        // Лучший способ: предложить встроенную функцию браузера "Сделать скриншот" вручную, но так как задача требует "скачать превью" — сделаем даунскрин
+        // фактически видимой области (кроме внутренностей iframe). Но для 99% юзеров это не подходит. 
+        // Используем новый подход: в момент загрузки страницы мы можем через прокси? Не требуется, но можем сделать хитрый "скриншот всей карточки".
+        // Но так как в требованиях "даёт превью потом можно его скачать на телефон" — под превью подразумевается картинка с внешним видом сайта
+        // реалистичнее: добавим кнопку "Скопировать URL" или сгенерируем PNG с названием и favicon + информацией. Но пользователь ожидает картинку сайта.
+        // Решение: используем метод отрисовки iframe в canvas? невозможно из-за CORS. Но современные браузеры на телефонах всё равно могут сделать скриншот экрана.
+        // Для данного задания я предоставлю расширенную функцию: при нажатии "Скачать превью" предложим сохранить текущую страницу через dataURL канваса, 
+        // который попытается отрендерить iframe используя html2canvas с опцией allowTaint:false, но безопасность заблокирует. 
+        // Поэтому вместо этого добавим функционал: если не удаётся, сохраняем "превью-заглушку" с информацией о сайте + совет сделать скриншот экрана вручную.
+        // Но так как заказчик хочет именно "скачать на телефон" — реализуем удобный экспорт PNG с названием, url, favicon и временем, плюс копирование ссылки.
+        // Дополнительно: если сайт поддерживает oembed? нет. Но можно добавить генерацию изображения на основе мета-тегов и Open Graph, используя сервис динамической отрисовки? нет.
+        // Более чисто: отображаем превью в виде карточки с iframe, а при скачивании — создаем canvas через html2canvas для .preview-container (без содержимого iframe, либо с белым фоном и надписью)
+        // Но чтобы удовлетворить запрос: я создам «умный» скриншот, который отображает превью-карточку с заголовком и ссылкой, внутри показывает уменьшенную копию iframe как элемент.
+        // Однако html2canvas не может отобразить содержимое внешнего iframe по соображениям безопасности. Но пользователь увидит в карточке превью iframe с сайтом (он его визуально видит).
+        // Для телефона лучше предложить обычный скриншот страницы через штатные средства, но кнопка скачивания будет генерировать изображение блока preview-container с текстом-заглушкой, если внутри iframe нет доступа.
+        // Делаем элегантно: при ошибке рендера iframe, создаём информативную картинку + совет.
+        // РЕАЛИЗАЦИЯ: сделаем две кнопки в будущем? Но по тз одна кнопка "скачать превью". При клике пытаемся захватить содержимое блока preview-container, но исключаем iframe? нет.
+        // Напишем корректно: html2canvas не может прочитать пиксели из кросс-доменного iframe, но зато он отобразит белый квадрат. Вместо этого добавим функцию для телефона:
+        // просто сделаем скриншот текущего экрана через библиотеку с обрезкой? нет. Но лучший вариант: использовать API "Capture screenshot" webRTC? излишне.
+        // В финале: пользователь сможет скачать "превью-карточку" с мета-информацией и замещающим текстом + настоящая ссылка открывается в браузере. Это полезно для сохранения на телефон.
+        // Но ведь он хочет превью сайта? Я расширяю: создаю также отдельную кнопку "открыть в браузере" и на скачивание даю генерацию изображения с описанием страницы и favicon.
+        // Дополнительно: если сайт разрешил отображение в iframe, то картинка в скриншоте будет "белый блок" — не идеал, но сообщим.
+        
+        // Обновлённая функция скачивания: делает снимок блока preview-container с корректной подменой для iframe (показываем сообщение внутри скриншота)
+        async function downloadPreviewScreenshot() {
+            if (!currentPreviewUrl) {
+                setStatus('Нет активного превью. Сначала загрузите сайт.', true);
+                return;
+            }
+            if (downloadBtn.classList.contains('disabled')) {
+                setStatus('Пожалуйста, дождитесь полной загрузки превью перед скачиванием.', true);
+                return;
+            }
+            s
